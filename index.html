@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Trading Dashboard</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card-bg: #ffffff;
+    --card-border: #e2e0da;
+    --text: #1c1b19;
+    --text-dim: #5b584f;
+    --green: #1f7a3d;
+    --green-bg: #e8f5ec;
+    --red: #b3261e;
+    --red-bg: #fdecea;
+    --accent: #2f5d9c;
+    --accent-bg: #eaf1fb;
+    --amber: #8a5a00;
+    --amber-bg: #fdf3e0;
+    --divider: #e8e6e0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  header.page-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 4px 2px 14px;
+  }
+  header.page-head h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  header.page-head .asof { font-size: 12px; color: var(--text-dim); }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  /* ---------- Section 1: Total Portfolio ---------- */
+  .portfolio-card { padding: 18px 18px 16px; cursor: pointer; }
+  .portfolio-card .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .portfolio-card .value { font-size: 34px; font-weight: 800; margin: 4px 0 6px; letter-spacing: -0.02em; }
+  .portfolio-card .subrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+  .pill { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+  .pill.pos { background: var(--green-bg); color: var(--green); }
+  .pill.neg { background: var(--red-bg); color: var(--red); }
+  .pill.alpha { background: var(--accent-bg); color: var(--accent); }
+  .tap-hint { font-size: 12px; color: var(--text-dim); margin-top: 10px; display: flex; align-items: center; gap: 4px; }
+  .chev { transition: transform 0.2s ease; display: inline-block; }
+  .portfolio-card.expanded .chev { transform: rotate(180deg); }
+
+  .bucket-drawer { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; border-top: 1px solid var(--divider); }
+  .bucket-drawer.open { max-height: 600px; }
+  .bucket-drawer-inner { padding: 14px 18px 16px; }
+  .bucket-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--divider); }
+  .bucket-row:last-child { border-bottom: none; }
+  .bucket-name { font-weight: 700; font-size: 14px; }
+  .bucket-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .bucket-val { font-weight: 700; font-size: 14px; text-align: right; }
+  .bucket-target { font-size: 11px; color: var(--text-dim); text-align: right; }
+
+  /* ---------- Section headers ---------- */
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin: 22px 4px 8px; }
+
+  /* ---------- Section 2: Positions ---------- */
+  .position-card { padding: 0; }
+  .position-row { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .position-row + .position-row { border-top: 1px solid var(--divider); }
+  .pos-left { display: flex; flex-direction: column; }
+  .pos-symbol { font-weight: 800; font-size: 16px; }
+  .pos-meta { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .pos-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+  .pos-price { font-weight: 700; font-size: 15px; }
+  .pos-change { font-size: 12px; font-weight: 700; margin-top: 1px; }
+  .pos-change.pos { color: var(--green); }
+  .pos-change.neg { color: var(--red); }
+
+  .trade-drawer { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #fafaf8; }
+  .trade-drawer.open { max-height: 400px; }
+  .trade-drawer-inner { padding: 4px 16px 16px; }
+  .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .trade-box { border-radius: 10px; padding: 10px 12px; }
+  .trade-box.floor { background: var(--red-bg); }
+  .trade-box.ceiling { background: var(--green-bg); }
+  .trade-box .tlabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+  .trade-box.floor .tlabel { color: var(--red); }
+  .trade-box.ceiling .tlabel { color: var(--green); }
+  .trade-box .tval { font-size: 16px; font-weight: 800; margin-top: 2px; }
+  .trade-box .tsub { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .etrade-note { font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.5; }
+  .etrade-note b { color: var(--text); }
+  .no-stop-note { font-size: 12px; color: var(--text-dim); background: var(--accent-bg); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+
+  /* ---------- Section 3: Questions ---------- */
+  .qcard { padding: 4px 4px; }
+  .qitem { padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .qitem + .qitem { border-top: 1px solid var(--divider); }
+  .qnum { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--amber-bg); color: var(--amber); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .qtext { font-size: 14px; }
+  .qtext .qwhy { display: block; font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ---------- Section 4: Watchlist ---------- */
+  .watch-row { padding: 14px 16px; cursor: pointer; }
+  .watch-row + .watch-row { border-top: 1px solid var(--divider); }
+  .watch-top { display: flex; justify-content: space-between; align-items: center; }
+  .watch-symbol { font-weight: 800; font-size: 16px; }
+  .watch-price { font-weight: 700; font-size: 15px; }
+  .watch-thesis { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; line-height: 1.4; }
+
+  /* ---------- Collapsible "more" accordion ---------- */
+  .accordion { }
+  .accordion-head { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .accordion-head h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid var(--divider); }
+  .accordion-body.open { max-height: 2000px; }
+  .accordion-body-inner { padding: 14px 16px 16px; font-size: 13.5px; }
+  .accordion-body-inner h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin: 14px 0 6px; }
+  .accordion-body-inner h4:first-child { margin-top: 0; }
+  .accordion-body-inner p { margin: 0 0 8px; color: var(--text); }
+  .accordion-body-inner ul { margin: 0 0 8px; padding-left: 18px; }
+  .accordion-body-inner li { margin-bottom: 4px; }
+
+  footer.foot { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 24px; padding: 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <h1>Trading Dashboard</h1>
+    <span class="asof">As of Sep 19, 8:43am ET</span>
+  </header>
+
+  <!-- ============ 1. TOTAL PORTFOLIO PERFORMANCE ============ -->
+  <div class="card portfolio-card" id="portfolio-card" onclick="toggleDrawer('bucket-drawer', this)">
+    <div class="label">Total Portfolio Value</div>
+    <div class="value">$1,938.40</div>
+    <div class="subrow">
+      <span class="pill pos">+3.71% since 9/11</span>
+      <span class="pill neg">SPY -0.34%</span>
+      <span class="pill alpha">+4.05pp alpha</span>
+    </div>
+    <div class="tap-hint">Tap for bucket breakdown <span class="chev">▾</span></div>
+  </div>
+  <div class="bucket-drawer" id="bucket-drawer">
+    <div class="bucket-drawer-inner">
+      <div class="bucket-row">
+        <div>
+          <div class="bucket-name">Bucket 1 — Core</div>
+          <div class="bucket-sub">SCHG, 19 sh @ $35.31</div>
+        </div>
+        <div>
+          <div class="bucket-val">$673.17</div>
+          <div class="bucket-target">target $535.14</div>
+        </div>
+      </div>
+      <div class="bucket-row">
+        <div>
+          <div class="bucket-name">Bucket 2 — Swing</div>
+          <div class="bucket-sub">No open position</div>
+        </div>
+        <div>
+          <div class="bucket-val">$0</div>
+          <div class="bucket-target">target $535.14</div>
+        </div>
+      </div>
+      <div class="bucket-row">
+        <div>
+          <div class="bucket-name">Bucket 4 — Hyper-aggressive</div>
+          <div class="bucket-sub">RIOT + SOFI (pending confirm)</div>
+        </div>
+        <div>
+          <div class="bucket-val">$695.45</div>
+          <div class="bucket-target">nominal $500</div>
+        </div>
+      </div>
+      <div class="bucket-row">
+        <div>
+          <div class="bucket-name">Cash</div>
+          <div class="bucket-sub">No bucket, no target — reallocated only via a Question For You</div>
+        </div>
+        <div>
+          <div class="bucket-val">$414.68</div>
+          <div class="bucket-target">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. INDIVIDUAL STOCK PERFORMANCE ============ -->
+  <div class="section-title">Your Positions</div>
+  <div class="card position-card">
+
+    <div class="position-row" id="pos-riot" onclick="toggleDrawer('trade-riot', this)">
+      <div class="pos-left">
+        <div class="pos-symbol">RIOT</div>
+        <div class="pos-meta">15 sh @ $19.82 · Bucket 4</div>
+      </div>
+      <div class="pos-right">
+        <div class="pos-price">$23.75</div>
+        <div class="pos-change pos">+19.86%</div>
+      </div>
+    </div>
+    <div class="trade-drawer" id="trade-riot">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor">
+            <div class="tlabel">Stop-loss floor</div>
+            <div class="tval">$15.86</div>
+            <div class="tsub">-20% from entry</div>
+          </div>
+          <div class="trade-box ceiling">
+            <div class="tlabel">Take-profit ceiling</div>
+            <div class="tval">$25.77</div>
+            <div class="tsub">+30% from entry</div>
+          </div>
+        </div>
+        <div class="etrade-note">~63% of the way to take-profit. Rule is mechanical: take half + trail stop to breakeven at $25.77, no discretionary trim before then. <b>E*TRADE:</b> GTC stop-loss should already be resting at $15.86 on all 15 sh.</div>
+      </div>
+    </div>
+
+    <div class="position-row" id="pos-sofi" onclick="toggleDrawer('trade-sofi', this)">
+      <div class="pos-left">
+        <div class="pos-symbol">SOFI</div>
+        <div class="pos-meta">20 sh @ $16.83 · Bucket 4 (pending confirm)</div>
+      </div>
+      <div class="pos-right">
+        <div class="pos-price">$16.96</div>
+        <div class="pos-change pos">+0.77%</div>
+      </div>
+    </div>
+    <div class="trade-drawer" id="trade-sofi">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor">
+            <div class="tlabel">Stop-loss floor</div>
+            <div class="tval">$13.46</div>
+            <div class="tsub">-20% from entry</div>
+          </div>
+          <div class="trade-box ceiling">
+            <div class="tlabel">Take-profit ceiling</div>
+            <div class="tval">$21.88</div>
+            <div class="tsub">+30% from entry</div>
+          </div>
+        </div>
+        <div class="etrade-note">Newly found live position (unlogged buy) — still waiting on your confirmation that Bucket 4 should formally run two concurrent names. <b>E*TRADE:</b> confirm a GTC stop is placed at $13.46.</div>
+      </div>
+    </div>
+
+    <div class="position-row" onclick="toggleDrawer('trade-schg', this)">
+      <div class="pos-left">
+        <div class="pos-symbol">SCHG</div>
+        <div class="pos-meta">19 sh @ $35.31 · Bucket 1</div>
+      </div>
+      <div class="pos-right">
+        <div class="pos-price">$35.43</div>
+        <div class="pos-change pos">+0.34%</div>
+      </div>
+    </div>
+    <div class="trade-drawer" id="trade-schg">
+      <div class="trade-drawer-inner">
+        <div class="no-stop-note">Bucket 1 core holding — no stop-loss by design. Protected instead by the monthly rebalance review and the 15% total-portfolio drawdown guardrail. Rebalanced only at month-end.</div>
+      </div>
+    </div>
+
+    <div class="position-row" onclick="toggleDrawer('trade-aph', this)">
+      <div class="pos-left">
+        <div class="pos-symbol">APH</div>
+        <div class="pos-meta">2 sh @ $38.78 · legacy, outside buckets</div>
+      </div>
+      <div class="pos-right">
+        <div class="pos-price">~$78.42</div>
+        <div class="pos-change pos">+102.1%</div>
+      </div>
+    </div>
+    <div class="trade-drawer" id="trade-aph">
+      <div class="trade-drawer-inner">
+        <div class="no-stop-note">Pre-existing holding from before this experiment started. Not part of any bucket's capital or rules — held as-is, no active trade plan.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ 3. QUESTIONS FOR YOU ============ -->
+  <div class="section-title">Questions To Answer — For Maximum Impact</div>
+  <div class="card qcard">
+    <div class="qitem">
+      <div class="qnum">1</div>
+      <div class="qtext">E*TRADE should show $414.68 cash, RIOT 15 sh, SOFI 20 sh, SCHG 19 sh, APH 2 sh. Reply "1. Confirmed" or "1. Mismatch: ..." with the difference.
+        <span class="qwhy">Standing reconciliation check — drift has slipped through unnoticed before.</span>
+      </div>
+    </div>
+    <div class="qitem">
+      <div class="qnum">2</div>
+      <div class="qtext">Should Bucket 4 formally run two concurrent names (RIOT + SOFI)? Reply "2. Yes, both" or "2. No, SOFI is ..."
+        <span class="qwhy">Changes position sizing and exit tracking going forward.</span>
+      </div>
+    </div>
+    <div class="qitem">
+      <div class="qnum">3</div>
+      <div class="qtext">Confirm targets B1 $535.14 / B2 $535.14 / B4 $500 (cash unbucketed, no target). Reply "3. Confirmed" or "3. Change: ..."
+        <span class="qwhy">Unlocks a real decision on the Bucket 2 funding gap below.</span>
+      </div>
+    </div>
+    <div class="qitem">
+      <div class="qnum">4</div>
+      <div class="qtext">Bucket 2 has $0 funded and has never traded. Move some of the $414.68 cash into it, or leave it as cash for now? Reply "4. Fund Bucket 2 with $..." or "4. Leave as cash"
+        <span class="qwhy">Bucket 2 has never traded — partly because it's never been funded.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 4. WATCHLIST ============ -->
+  <div class="section-title">Watchlist — Worth Researching</div>
+  <div class="card">
+
+    <div class="watch-row" onclick="toggleDrawer('watch-ccl', this)">
+      <div class="watch-top">
+        <span class="watch-symbol">CCL</span>
+        <span class="watch-price">$22.11</span>
+      </div>
+      <div class="watch-thesis">Carnival — Bucket 4 broad-scan candidate, active swap watch.</div>
+    </div>
+    <div class="trade-drawer" id="watch-ccl">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor"><div class="tlabel">If bought — floor</div><div class="tval">$17.69</div><div class="tsub">-20% hypothetical</div></div>
+          <div class="trade-box ceiling"><div class="tlabel">If bought — ceiling</div><div class="tval">$28.74</div><div class="tsub">+30% hypothetical</div></div>
+        </div>
+        <div class="etrade-note">Illustrative only — not an active recommendation yet. Screened against entry rules fresh each check-in.</div>
+      </div>
+    </div>
+
+    <div class="watch-row" onclick="toggleDrawer('watch-qbts', this)">
+      <div class="watch-top">
+        <span class="watch-symbol">QBTS</span>
+        <span class="watch-price">$17.76</span>
+      </div>
+      <div class="watch-thesis">D-Wave Quantum — Bucket 4 broad-scan candidate, active swap watch.</div>
+    </div>
+    <div class="trade-drawer" id="watch-qbts">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor"><div class="tlabel">If bought — floor</div><div class="tval">$14.21</div><div class="tsub">-20% hypothetical</div></div>
+          <div class="trade-box ceiling"><div class="tlabel">If bought — ceiling</div><div class="tval">$23.09</div><div class="tsub">+30% hypothetical</div></div>
+        </div>
+        <div class="etrade-note">Illustrative only — not an active recommendation yet. Screened against entry rules fresh each check-in.</div>
+      </div>
+    </div>
+
+    <div class="watch-row" onclick="toggleDrawer('watch-mac', this)">
+      <div class="watch-top">
+        <span class="watch-symbol">MAC</span>
+        <span class="watch-price">$22.40</span>
+      </div>
+      <div class="watch-thesis">Macerich — Bucket 4 broad-scan candidate, active swap watch.</div>
+    </div>
+    <div class="trade-drawer" id="watch-mac">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor"><div class="tlabel">If bought — floor</div><div class="tval">$17.92</div><div class="tsub">-20% hypothetical</div></div>
+          <div class="trade-box ceiling"><div class="tlabel">If bought — ceiling</div><div class="tval">$29.12</div><div class="tsub">+30% hypothetical</div></div>
+        </div>
+        <div class="etrade-note">Illustrative only — not an active recommendation yet. Screened against entry rules fresh each check-in.</div>
+      </div>
+    </div>
+
+    <div class="watch-row" onclick="toggleDrawer('watch-pl', this)">
+      <div class="watch-top">
+        <span class="watch-symbol">PL</span>
+        <span class="watch-price">$16.83</span>
+      </div>
+      <div class="watch-thesis">Planet Labs — Bucket 4 broad-scan candidate, active swap watch.</div>
+    </div>
+    <div class="trade-drawer" id="watch-pl">
+      <div class="trade-drawer-inner">
+        <div class="trade-grid">
+          <div class="trade-box floor"><div class="tlabel">If bought — floor</div><div class="tval">$13.46</div><div class="tsub">-20% hypothetical</div></div>
+          <div class="trade-box ceiling"><div class="tlabel">If bought — ceiling</div><div class="tval">$21.88</div><div class="tsub">+30% hypothetical</div></div>
+        </div>
+        <div class="etrade-note">Illustrative only — not an active recommendation yet. Screened against entry rules fresh each check-in.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ 5. EVERYTHING ELSE — COLLAPSED ============ -->
+  <div class="card accordion" id="section-more">
+    <div class="accordion-head" onclick="toggleAccordion('more-body', this)">
+      <h3>Market Pulse &amp; Process Notes</h3>
+      <span class="chev" id="more-chev">▾</span>
+    </div>
+    <div class="accordion-body" id="more-body">
+      <div class="accordion-body-inner">
+        <h4>Market Pulse</h4>
+        <p>Crypto-regulatory overhang (Senate Clarity Act rejected 49-50) remains a standing risk factor for RIOT, though not dominating recent coverage. Sentiment on RIOT strongly positive (Seeking Alpha Strong Buy, $35 PT reiterated). No new congressional disclosures on tracked names (swept monthly).</p>
+
+        <h4>Process Audit — 6 Changes Live as of 9/19</h4>
+        <ul>
+          <li>Standing reconciliation question added to every weekday check-in (see Question 1 above).</li>
+          <li>Bucket 2 candidate sourcing widened — sector-expansion screen is now primary, Energy kept as a floor.</li>
+          <li>Data-source priority order: Tradier → Bigdata.com → Alpha Vantage → FMP.</li>
+          <li>Doc and Data Table sheet now built from one shared source of truth.</li>
+          <li>Off-cycle no-op runs stop creating new tracker rows.</li>
+          <li>Afternoon check-in's tools now match Morning's.</li>
+        </ul>
+
+        <h4>Strategy Change — 9/19, later same day</h4>
+        <ul>
+          <li>Bucket 3 (cash reserve) dropped entirely — cash is now just cash, no target, no standing redeploy rule. Reallocation is decided live via Questions To Answer above when it actually matters.</li>
+          <li>Questions To Answer are now written so your reply can be typed/copy-pasted straight back, no reformatting needed.</li>
+        </ul>
+
+        <h4>Guardrails (always in force)</h4>
+        <ul>
+          <li>15% total portfolio drawdown from peak → full pause + your review. Hard floor, never adjusted.</li>
+          <li>No options, margin, leverage, or crypto derivatives — ever, in any bucket.</li>
+          <li>No minimum daily-return target — recommendations are made on setup quality only.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">Claude recommends, Marc executes every trade manually in E*TRADE.<br>Full history: Market Analysis Doc + Data Table (Google Drive).</footer>
+
+</div>
+
+<script>
+  function toggleDrawer(id, rowEl) {
+    var el = document.getElementById(id);
+    var wasOpen = el.classList.contains('open');
+    // close all other open drawers (accordion-style, one at a time) except this one
+    document.querySelectorAll('.trade-drawer.open, .bucket-drawer.open').forEach(function(d) {
+      if (d.id !== id) d.classList.remove('open');
+    });
+    document.querySelectorAll('.portfolio-card.expanded').forEach(function(c) {
+      if (c !== rowEl) c.classList.remove('expanded');
+    });
+    el.classList.toggle('open', !wasOpen);
+    if (rowEl && rowEl.classList.contains('portfolio-card")) {
+      rowEl.classList.toggle('expanded', !wasOpen);
+    }
+  }
+  function toggleAccordion(id, headEl) {
+    var el = document.getElementById(id);
+    var wasOpen = el.classList.contains('open');
+    el.classList.toggle('open', !wasOpen);
+    document.getElementById('more-chev').style.transform = !wasOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+</script>
+</body>
+</html>
