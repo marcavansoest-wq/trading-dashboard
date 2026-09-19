@@ -141,7 +141,7 @@
 
   <header class="page-head">
     <h1>Trading Dashboard</h1>
-    <span class="asof">As of Sep 19, 8:43am ET</span>
+    <span class="asof">As of Sep 19, 12:12pm ET</span>
   </header>
 
   <!-- ============ 1. TOTAL PORTFOLIO PERFORMANCE ============ -->
@@ -180,7 +180,7 @@
       <div class="bucket-row">
         <div>
           <div class="bucket-name">Bucket 3 — Hyper-aggressive</div>
-          <div class="bucket-sub">RIOT + SOFI (pending confirm)</div>
+          <div class="bucket-sub">RIOT + SOFI</div>
         </div>
         <div>
           <div class="bucket-val">$695.45</div>
@@ -228,14 +228,14 @@
             <div class="tsub">+30% from entry</div>
           </div>
         </div>
-        <div class="etrade-note">~63% of the way to take-profit. Rule is mechanical: take half + trail stop to breakeven at $25.77, no discretionary trim before then. <b>E*TRADE:</b> GTC stop-loss should already be resting at $15.86 on all 15 sh.</div>
+        <div class="etrade-note">~63% of the way to take-profit. Rule is mechanical: take half + trail stop to breakeven at $25.77, no discretionary trim before then. <b>E*TRADE:</b> Live as a real One-Cancels-Other bracket order placed 9/19 — both legs on all 15 sh, Good for 60 days.</div>
       </div>
     </div>
 
     <div class="position-row" id="pos-sofi" onclick="toggleDrawer('trade-sofi', this)">
       <div class="pos-left">
         <div class="pos-symbol">SOFI</div>
-        <div class="pos-meta">20 sh @ $16.83 · Bucket 3 (pending confirm)</div>
+        <div class="pos-meta">20 sh @ $16.83 · Bucket 3</div>
       </div>
       <div class="pos-right">
         <div class="pos-price">$16.96</div>
@@ -252,11 +252,11 @@
           </div>
           <div class="trade-box ceiling">
             <div class="tlabel">Take-profit ceiling</div>
-            <div class="tval">$21.88</div>
-            <div class="tsub">+30% from entry</div>
+            <div class="tval">$23.50</div>
+            <div class="tsub">+40% from entry</div>
           </div>
         </div>
-        <div class="etrade-note">Newly found live position (unlogged buy) — still waiting on your confirmation that Bucket 3 should formally run two concurrent names. <b>E*TRADE:</b> confirm a GTC stop is placed at $13.46.</div>
+        <div class="etrade-note">Ceiling set wider than the standard +30% template — risk/reward off the stop is ~2:1, moderate-confidence target (not yet a strong directional thesis). <b>E*TRADE:</b> Live as a real One-Cancels-Other bracket order placed 9/19 — both legs on all 20 sh, Good for 60 days.</div>
       </div>
     </div>
 
@@ -279,16 +279,28 @@
     <div class="position-row" onclick="toggleDrawer('trade-aph', this)">
       <div class="pos-left">
         <div class="pos-symbol">APH</div>
-        <div class="pos-meta">2 sh @ $38.78 · legacy, outside buckets</div>
+        <div class="pos-meta">2 sh @ $38.78 · Legacy — bucket TBD (see Q5)</div>
       </div>
       <div class="pos-right">
-        <div class="pos-price">~$78.42</div>
-        <div class="pos-change pos">+102.1%</div>
+        <div class="pos-price">$77.55</div>
+        <div class="pos-change pos">+99.95%</div>
       </div>
     </div>
     <div class="trade-drawer" id="trade-aph">
       <div class="trade-drawer-inner">
-        <div class="no-stop-note">Pre-existing holding from before this experiment started. Not part of any bucket's capital or rules — held as-is, no active trade plan.</div>
+        <div class="trade-grid">
+          <div class="trade-box floor">
+            <div class="tlabel">Stop-loss floor</div>
+            <div class="tval">$66.66</div>
+            <div class="tsub">-15% from placement price</div>
+          </div>
+          <div class="trade-box ceiling">
+            <div class="tlabel">Take-profit ceiling</div>
+            <div class="tval">$87.00</div>
+            <div class="tsub">+12% from current — locking in more of an already-doubled position</div>
+          </div>
+        </div>
+        <div class="etrade-note">Pre-existing holding from before this experiment started, now folded into the overall strategy per your request. <b>E*TRADE:</b> Live as a real One-Cancels-Other bracket order placed 9/19 — both legs on all 2 sh, Good for 60 days. Still outside any bucket's capital total until Q5 below is answered.</div>
       </div>
     </div>
 
@@ -319,6 +331,12 @@
       <div class="qnum">4</div>
       <div class="qtext">Bucket 2 has $0 funded and has never traded. Move some of the $414.68 cash into it, or leave it as cash for now? Reply "4. Fund Bucket 2 with $..." or "4. Leave as cash"
         <span class="qwhy">Bucket 2 has never traded — partly because it's never been funded.</span>
+      </div>
+    </div>
+    <div class="qitem">
+      <div class="qnum">5</div>
+      <div class="qtext">APH (2 sh, now $155.10) is protected with a real bracket order but still sits outside every bucket's capital total. Fold it into Bucket 1 alongside SCHG, or keep it as its own unbucketed "Legacy" line permanently? Reply "5. Fold into Bucket 1" or "5. Keep separate"
+        <span class="qwhy">Changes Bucket 1's value vs. target — folding it in puts Bucket 1 at $828.27, already well above its $535.14 target.</span>
       </div>
     </div>
   </div>
@@ -422,6 +440,9 @@
         <ul>
           <li>The former cash-reserve bucket (previously labeled "Bucket 3", now retired) dropped entirely — cash is now just cash, no target, no standing redeploy rule. Reallocation is decided live via Questions To Answer above when it actually matters.</li>
           <li>Questions To Answer are now written so your reply can be typed/copy-pasted straight back, no reformatting needed.</li>
+          <li>Real protective orders placed for the first time: RIOT, SOFI, and APH each now carry a live One-Cancels-Other bracket (stop-loss + take-profit) on E*TRADE Web, via Trading → Conditionals → One-Cancels-Other — not the mobile app's "Contingent Order" or "Bracketed-OCO" ticket, neither of which support a true stop leg.</li>
+          <li>APH (legacy pre-experiment position) formally folded into the strategy per your request, protected the same way as the bucketed positions — bucket assignment still open (Q5).</li>
+          <li>12%/month growth target and 1-5 confidence scoring on trade recommendations adopted — see check-in prompts.</li>
         </ul>
 
         <h4>Guardrails (always in force)</h4>
